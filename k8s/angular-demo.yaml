@@ -1,0 +1,76 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    tier: frontend
+  name: ng-demo-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ng-demo
+      tier: frontend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: ng-demo
+        tier: frontend
+    spec:
+      volumes:
+      - name: prod-build
+        emptyDir: {}
+      initContainers:
+      - image: vp914/ng-demo-apm-build
+        name: init-apm
+        env:
+        - name: ELASTIC_APM_ENABLED 
+          value: "true"
+        - name: ELASTIC_APM_SERVICE_NAME 
+          value: "my-ng-demo"
+        - name: ELASTIC_APM_SERVER_URL 
+          value: "http://192.168.1.179:8200"
+        - name: ELASTIC_APM_LOG_LEVEL 
+          value: "debug"
+        volumeMounts:
+        - mountPath: /build
+          name: prod-build
+        command:
+        - /bin/sh
+        - -c
+        - sh /init_apm.sh &&
+          cp -v /app/dist/demo-app/* /build
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: prod-build
+        #command: 
+        #- /bin/sh
+        #- -c
+        #- cp -v /build/* /usr/share/nginx/html/
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    tier: frontend
+  name: ng-frontend-svc
+spec:
+  ports:
+  - name: 82-80
+    port: 82
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: ng-demo
+    tier: frontend
+  type: NodePort
+status:
+  loadBalancer: {}
