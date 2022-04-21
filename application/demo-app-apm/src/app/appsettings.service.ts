@@ -14,7 +14,12 @@ export class AppsettingsService {
     this.apmsvc = service;
   }
 
-  initApm(){}
+  initApm(){
+    this.apm = this.apmsvc.init({
+      serviceName: 'ng-demo',
+      logLevel: 'debug'
+    });
+  }
 
   getApmInstance(){
     return this.apm;
