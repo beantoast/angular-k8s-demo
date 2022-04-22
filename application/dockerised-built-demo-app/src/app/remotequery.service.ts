@@ -17,7 +17,7 @@ export class RemotequeryService {
     return this.http.get(url);
   }
 
-  //http://www.bom.gov.au/fwo/IDN60903/IDN60903.94926.json
+  //http://worldtimeapi.org/api/timezone/Australia/Sydney
 
   //clear() {
   //  this.messages = [];
